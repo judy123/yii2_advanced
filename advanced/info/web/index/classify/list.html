@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<HTML>
+ <HEAD>
+  <TITLE> ZTREE DEMO </TITLE>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <style>
+	body {
+	background-color: white;
+	margin:0; padding:0;
+	text-align: left;
+	}
+	div, p, table, th, td {
+		list-style:none;
+		margin:0; padding:0;
+		color:#333; font-size:12px;
+		font-family:dotum, Verdana, Arial, Helvetica, AppleGothic, sans-serif;
+	}
+	#testIframe {margin-left: 10px;}
+	.top{height:100px;}
+	.li{float:left;width:120px;list-style:none;}
+	.line{border:1px solid #ccc;clear:both;margin:10px 0;}
+	#form{height:30px;padding:10px 0px;}
+	#list{margin-top:10px;}
+  </style>
+<script type="text/javascript" src="../../js/ztree/jquery-1.4.4.min.js"></script>
+<script type="text/javascript" src="../../js/ztree/jquery.ztree.core.js"></script>
+  <SCRIPT type="text/javascript" >
+
+	$(document).ready(function(){
+        changeLinkage("");
+		submitSearch()
+	});
+	
+	function submitSearch(){
+		$("#list").html("");
+		var pid = $("#pid").val();
+		var html="";
+		$.ajax({
+            url: "http://info.judy.com:8080/web/index.php/classify-rests?linkage=1&pid="+pid,
+     	    dataType: 'json',
+      	    success: function(data){
+      	    	html+='<tr>';
+      	    	html+='<th width="5%">ID</th>';
+      	    	html+='<th>NAME</th>';
+      	    	html+='<th width="5%">PID</th>';
+      	    	html+='<th width="5%">ORDERID</th>';
+      	    	html+='<th width="20%">OPERATE</th>';
+    	    	html+='</tr>';
+      	    	if (data.length>0) {
+	          	    for (var e in data){
+	          	    	html+="<tr>";
+	          	    	html+="<td>"+data[e].id+"</td>";
+	          	    	html+="<td>"+data[e].name+"</td>";
+	          	    	html+="<td>"+data[e].pid+"</td>";
+	          	    	html+="<td>"+data[e].orderid+"</td>";
+	          	    	html+="<td>";
+	          	    	html+="<a href='/web/index/classify/edit.html?id="+data[e].id+"' target='_blank'>edit</a>&nbsp;&nbsp;";
+	          	    	html+="<a href='javascript:void();' onclick='delClassify("+data[e].id+")'>del</a>";
+	          	    	html+="</td>";
+	          	    	html+="</tr>";
+	          	    }
+      	    	} else {
+      	    		html+="<tr><td colspan='5'>NO DATA</td></tr>";
+      	    	}
+      	    	$("#list").append(html);
+      	    }
+        })
+	}
+	function changeLinkage(obj){
+		var changePid = $(obj).find("option:selected").val();
+		if (changePid) {
+			$("#pid").val(changePid);
+		}
+		var pid = $("#pid").val();
+		if (!pid){
+			pid = 0;
+		}
+		if ($(obj).length>0){
+			$(obj).nextAll().remove();
+		}
+		var html="";
+		$.ajax({
+            url: "http://info.judy.com:8080/web/index.php/classify-rests?linkage=1&pid="+pid,
+     	    dataType: 'json',
+      	    success: function(data){
+      	    	if (data.length>0) {
+	          	    html+="<select onchange='changeLinkage(this)'>";
+	          	  	html+="<option value=''>Please choose...</option>";
+	          	    for (var e in data){
+	          	    	html+="<option value='"+data[e].id+"'>"+data[e].name+"</option>";
+	          	    }
+	          	    html+="</select>";
+	          	  	$("#form").append(html);
+      	    	}
+      	    }
+        })
+	}
+	
+	function delClassify(id){
+		$.ajax({
+            url: "http://info.judy.com:8080/web/index.php/classify-rests/"+id,
+     	    dataType: 'json',
+     	    type:"delete",
+      	    success: function(data){
+      	    	location.reload();
+      	    }
+        })
+	}
+
+  </SCRIPT>
+ </HEAD>
+
+<BODY>
+<div class="top">
+    <ul>
+        <li class="li"><a href="#">home</a></li>
+        <li class="li"><a href="/web/index/classify/list.html" target="_blank">CLASSIFY</a></li>
+        <li class="li"><a href="/web/index/content/list.html" target="_blank">CONTENT</a></li>
+    </ul>
+</div>
+<div class="line"></div>
+<form id="form" >
+	<input type="hidden" id="pid" name="pid" value="0"/>
+</form>
+<button id="submitSearch" onclick="submitSearch()">Search</button>
+<div class="line"></div>
+<div><a href="/web/index/classify/add.html" target="_blank">ADD CLASSIFY</a></div>
+<TABLE id="list" border=1 width="800px" align=left>
+	
+</TABLE>
+
+</BODY>
+</HTML>

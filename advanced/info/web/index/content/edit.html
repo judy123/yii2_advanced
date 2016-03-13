@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<HTML>
+ <HEAD>
+  <TITLE> ZTREE DEMO </TITLE>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <style>
+	body {
+	background-color: white;
+	margin:0; padding:0;
+	text-align: left;
+	}
+	div, p, table, th, td {
+		list-style:none;
+		margin:0; padding:0;
+		color:#333; font-size:12px;
+		font-family:dotum, Verdana, Arial, Helvetica, AppleGothic, sans-serif;
+	}
+	#testIframe {margin-left: 10px;}
+	.top{height:100px;}
+	.li{float:left;width:120px;list-style:none;}
+	.line{border:1px solid #ccc;clear:both;margin:10px 0;}
+	#form{padding:10px 0px;}
+	#list{margin-top:10px;}
+  </style>
+<script type="text/javascript" src="../../js/ztree/jquery-1.4.4.min.js"></script>
+<script type="text/javascript" src="../../js/ztree/jquery.ztree.core.js"></script>
+
+<script type="text/javascript" charset="utf-8" src="../../js/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../js/ueditor/ueditor.all.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../js/ueditor/lang/zh-cn/zh-cn.js"></script>
+  <SCRIPT type="text/javascript" >
+	
+	$(document).ready(function(){
+		//实例化编辑器start
+		//建议使用工厂方法getEditor创建和引用编辑器实例，如果在某个闭包下引用该编辑器，直接调用UE.getEditor('editor')就能拿到相关的实例
+		var ue = UE.getEditor('editor');
+		
+		function isFocus(e){
+		    alert(UE.getEditor('editor').isFocus());
+		    UE.dom.domUtils.preventDefault(e)
+		}
+		function setblur(e){
+		    UE.getEditor('editor').blur();
+		    UE.dom.domUtils.preventDefault(e)
+		}
+		function insertHtml() {
+		    var value = prompt('插入html代码', '');
+		    UE.getEditor('editor').execCommand('insertHtml', value)
+		}
+		function createEditor() {
+		    enableBtn();
+		    UE.getEditor('editor');
+		}
+		//实例化编辑器end
+		
+        changeLinkage("");
+        var id = getUrlParam("id");
+        $.ajax({
+            url: "http://info.judy.com:8080/web/index.php/content-rests/"+id,
+     	    dataType: 'json',
+     	    type:"get",
+      	    success: function(data){
+      	    	$("#id").val(id);
+      	    	$("#pid").val(data.pid);
+      			$("#name").val(data.name);
+      			UE.getEditor('editor').setContent("",data.content);
+      			$("#orderid").val(data.orderid);
+      	    }
+        })
+	});
+	
+	function getUrlParam(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+        if (r != null) return unescape(r[2]); return null; //返回参数值
+    }
+	
+	function submitData(){
+		var id = $("#id").val();
+		var pid = $("#pid").val();
+		var name = $("#name").val();
+		var content = UE.getEditor('editor').getContent();
+		var orderid = $("#orderid").val();
+		$.ajax({
+            url: "http://info.judy.com:8080/web/index.php/content-rests/"+id,
+     	    dataType: 'json',
+     	    type:"put",
+     	    data:{name:name,content:content,pid:pid,orderid:orderid},
+      	    success: function(data){
+      	    	window.location.href="http://info.judy.com:8080/web/index/content/list.html";
+      	    }
+        })
+	}
+	function changeLinkage(obj){
+		var changePid = $(obj).find("option:selected").val();
+		if (changePid) {
+			$("#pid").val(changePid);
+		}
+		var pid = $("#pid").val();
+		if (!pid){
+			pid = 0;
+		}
+		if ($(obj).length>0){
+			$(obj).nextAll().remove();
+		}
+		var html="";
+		$.ajax({
+            url: "http://info.judy.com:8080/web/index.php/classify-rests?linkage=1&pid="+pid,
+     	    dataType: 'json',
+      	    success: function(data){
+      	    	if (data.length>0) {
+	          	    html+="<select onchange='changeLinkage(this)'>";
+	          	  	html+="<option value=''>Please choose...</option>";
+	          	    for (var e in data){
+	          	    	html+="<option value='"+data[e].id+"'>"+data[e].name+"</option>";
+	          	    }
+	          	    html+="</select>";
+	          	  	$("#linkage").append(html);
+      	    	}
+      	    }
+        })
+	}
+
+  </SCRIPT>
+ </HEAD>
+
+<BODY>
+<div class="top">
+    <ul>
+        <li class="li"><a href="#">home</a></li>
+        <li class="li"><a href="/web/index/classify/list.html" target="_blank">CLASSIFY</a></li>
+        <li class="li"><a href="/web/index/content/list.html" target="_blank">CONTENT</a></li>
+    </ul>
+</div>
+<div class="line"></div>
+<form id="form" >
+	<input type="hidden" id="id" name="id" value=""/>
+	<input type="hidden" id="pid" name="pid" value="0"/>
+	<table>
+	<tr>
+		<td>PID:</td>
+		<td id="linkage"></td>
+	</tr>
+	<tr>
+		<td>NAME:</td>
+		<td><input type="text" id="name" name="name" value=""/></td>
+	</tr>
+	<tr>
+		<td>CONTENT:</td>
+		<td><script id="editor" type="text/plain" style="width:1024px;height:500px;"></script></td>
+	</tr>
+	<tr>
+		<td>ORDERID:</td>
+		<td><input type="text" id="orderid" name="orderid" value=""/></td>
+	</tr>
+	</table>	
+</form>
+<button id="submitData" onclick="submitData()">Submit</button>
+
+</BODY>
+</HTML>

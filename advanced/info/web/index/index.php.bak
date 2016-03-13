@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="../js/jquery-1.9.1.js"></script>
+<script src="../js/jquery-1.9.1.min.js"></script>
+<title>Insert title here</title>
+<style>
+.left{width:28%;height:960px;float:left;border:1px solid #ccc;}
+.right{width:70%;height:960px;float:left;border:1px solid #ccc;}
+</style>
+</head>
+<body>
+	<div class="left">   
+	</div>
+	<div class="right">
+	</div>
+	<script>
+	$(document).ready(function(){
+		showList ();
+	});
+    function showList () {
+        $.ajax({
+            url: "http://localhost:8080/yii2_advanced/advanced/info/web/index.php/classify-rests?expand=contents",
+     	    dataType: 'json',
+      	    success: function(data){
+          	    var html = "";
+        	    for (var e in data) {
+            	    html += "<p>"+repeat("--",data[e]['pid'])+data[e]['name']+"</p>";
+            	    var contents = data[e]['contents'];
+            	    if (contents.length > 0) {
+                	    for (var ee in contents) {
+                	    	html += "<p onclick=showContent("+contents[ee]['id']+")>"+repeat("**",data[e]['pid'])+""+contents[ee]['name']+"</p>";
+                	    }
+            	    }
+                }
+            	$(".left").append(html);  
+      	    }
+        })
+    }
+    function repeat(str, num){ 
+    	return new Array( num + 1 ).join( str ); 
+	}
+    function showContent (id) {
+        $.ajax({
+            url: "http://localhost:8080/yii2_advanced/advanced/info/web/index.php/content-rests/"+id,
+     	    dataType: 'json',
+      	    success: function(data){
+      	    	$(".right").html("");
+          	    var html = "";
+        	    html += "<div><pre>"+data['content']+"</pre></div>";            	    
+            	$(".right").append(html);  
+      	    }
+        })
+    }
+	</script>
+</body>
+</html>

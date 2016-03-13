@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="../js/jquery-1.9.1.js"></script>
+<script src="../js/jquery-1.9.1.min.js"></script>
+<title>Insert title here</title>
+<style>
+.right{
+	width:850px;
+	word-break: normal; 
+	word-wrap: break-word;
+}
+</style>
+</head>
+<body>
+	<div class="right">
+		<p>Welcome,judy!</p>
+	</div>
+	<script>
+	$(document).ready(function(){
+		var id = getUrlParam("id");
+		showContent(id);
+	});
+	function getUrlParam(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+        if (r != null) return unescape(r[2]); return null; //返回参数值
+    }
+	
+    function showContent (id) {
+        $.ajax({
+            url: "http://localhost:8080/yii2_advanced/advanced/info/web/index.php/content-rests/"+id,
+     	    dataType: 'json',
+      	    success: function(data){
+      	    	$(".right").html("");
+          	    var html = "<h2>标题："+data['name']+"</h2>";
+          	    html += "<h3>正文：</h3>";
+        	    html += "<div><pre>"+data['content']+"</pre></div>";            	    
+            	$(".right").append(html);  
+      	    }
+        })
+    }
+	</script>
+</body>
+</html>
